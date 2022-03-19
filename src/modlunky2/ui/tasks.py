@@ -25,7 +25,7 @@ class Message:
 
 @dataclass
 class Task:
-    callback: Callable
+    callback: Callable[..., Any]
     threaded: bool = False
     on_complete: Optional[str] = None
 
@@ -36,15 +36,17 @@ class Worker:
         self.tx_queue = tx_queue
         self.last_ping = None
         self._started = False
-        self._receivers = {}
+        self._receivers: Dict[str, Task] = {}
 
-    def call(self, name, **kwargs):
+    def call(self, name: str, **kwargs):
         if not kwargs:
             kwargs = None
         msg = Message(name, kwargs)
         self.send_message(msg)
 
-    def register(self, name, callback, threaded=False, on_complete=None):
+    def register(
+        self, name: str, callback: Callable[..., Any], threaded=False, on_complete=None
+    ):
         if self._started:
             raise RuntimeError(
                 f"Attempted to register {name!r} after worker was started..."
@@ -128,13 +130,15 @@ class TaskManager:
             raise RuntimeError(f"{name} is already registered...")
         self._receivers[name] = callback
 
-    def register_task(self, name, callback, threaded=False, on_complete=None):
+    def register_task(
+        self, name: str, callback: Callable[..., Any], threaded=False, on_complete=None
+    ):
         self.worker.register(name, callback, threaded, on_complete)
 
     def register_handler(self, name, callback, overwrite=False):
         self.register(name, callback, overwrite)
 
-    def call(self, name, **kwargs):
+    def call(self, name: str, **kwargs):
         if not kwargs:
             kwargs = None
         msg = Message(name, kwargs)
@@ -147,6 +151,8 @@ class TaskManager:
         self.worker_process.start()
 
     def is_alive(self):
+        if self.worker_process is None:
+            return False
         return self.worker_process.is_alive()
 
     def quit(self):
@@ -158,7 +164,7 @@ class TaskManager:
     def send_message(self, msg: Message):
         self.tx_queue.put_nowait(msg)
 
-    def receive_message(self) -> Message:
+    def receive_message(self) -> Optional[Message]:
         try:
             return self.rx_queue.get_nowait()
         except Empty:
@@ -167,7 +173,7 @@ class TaskManager:
     def handle_pong(self):
         pass
 
-    def dispatch(self, msg):
+    def dispatch(self, msg: Message):
         if msg.name != "pong":
             logger.debug("Received Message: %s", msg)
 
