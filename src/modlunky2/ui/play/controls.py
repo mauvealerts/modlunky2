@@ -3,16 +3,24 @@ import shutil
 import tkinter as tk
 import webbrowser
 from tkinter import ttk
+from typing import TYPE_CHECKING
 
 from modlunky2.config import Config
 from modlunky2.ui.widgets import ToolTip
 from modlunky2.utils import open_directory
 
+if TYPE_CHECKING:
+    # This is a circular import. So, we only import during static analysis and use a
+    # string type-hint below.
+    from modlunky2.ui.play import PlayTab
+
 logger = logging.getLogger(__name__)
 
 
 class ControlsFrame(ttk.Frame):
-    def __init__(self, parent, play_tab, modlunky_config: Config, *args, **kwargs):
+    def __init__(
+        self, parent, play_tab: "PlayTab", modlunky_config: Config, *args, **kwargs
+    ):
         logger.debug("Initializing Playlunky ControlsFrame")
         super().__init__(parent, *args, **kwargs)
         self.parent = parent

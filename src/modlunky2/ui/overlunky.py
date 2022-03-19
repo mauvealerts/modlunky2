@@ -9,6 +9,7 @@ from tkinter import ttk
 import requests
 
 from modlunky2.config import Config
+from modlunky2.ui.tasks import TaskManager
 from modlunky2.ui.widgets import Tab
 from modlunky2.utils import tb_info
 
@@ -45,7 +46,7 @@ def download_overlunky_release(call, install_dir, launch):
 
 
 class DownloadFrame(ttk.Frame):
-    def __init__(self, parent, modlunky_config: Config, task_manager):
+    def __init__(self, parent, modlunky_config: Config, task_manager: TaskManager):
         super().__init__(parent)
 
         self.parent = parent

@@ -14,6 +14,7 @@ from urllib.parse import urlparse
 import requests
 
 from modlunky2.config import Config
+from modlunky2.ui.tasks import TaskManager
 from modlunky2.ui.widgets import Entry, Tab
 from modlunky2.utils import tb_info, zipinfo_fixup_filename
 from modlunky2.api import SpelunkyFYIClient
@@ -179,7 +180,14 @@ def install_local_mod(call, install_dir: Path, source: Path, pack: str):
 
 
 class LocalInstall(ttk.LabelFrame):
-    def __init__(self, parent, modlunky_config: Config, task_manager, *args, **kwargs):
+    def __init__(
+        self,
+        parent,
+        modlunky_config: Config,
+        task_manager: TaskManager,
+        *args,
+        **kwargs,
+    ):
         super().__init__(parent, text="Local Installation", *args, **kwargs)
 
         self.modlunky_config = modlunky_config
@@ -449,7 +457,14 @@ def install_fyi_mod(
 class FyiInstall(ttk.LabelFrame):
     VALID_SLUG = re.compile(r"^[-\w]+$")
 
-    def __init__(self, parent, modlunky_config: Config, task_manager, *args, **kwargs):
+    def __init__(
+        self,
+        parent,
+        modlunky_config: Config,
+        task_manager: TaskManager,
+        *args,
+        **kwargs,
+    ):
         super().__init__(parent, text="spelunky.fyi Installation", *args, **kwargs)
 
         self.modlunky_config = modlunky_config

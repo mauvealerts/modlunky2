@@ -14,6 +14,7 @@ from modlunky2.assets.constants import (
     PACKS_DIR,
 )
 from modlunky2.config import Config
+from modlunky2.ui.tasks import TaskManager
 from modlunky2.utils import open_directory
 from modlunky2.ui.widgets import Tab, ToolTip
 from modlunky2.assets.soundbank import Extension as SoundExtension
@@ -104,7 +105,12 @@ def extract_assets(
 
 class ExtractTab(Tab):
     def __init__(
-        self, tab_control, modlunky_config: Config, task_manager, *args, **kwargs
+        self,
+        tab_control,
+        modlunky_config: Config,
+        task_manager: TaskManager,
+        *args,
+        **kwargs
     ):
         super().__init__(tab_control, *args, **kwargs)
         self.tab_control = tab_control

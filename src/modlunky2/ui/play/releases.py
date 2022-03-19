@@ -14,6 +14,7 @@ from urllib.parse import urlparse
 import requests
 
 from modlunky2.config import Config
+from modlunky2.ui.tasks import TaskManager
 from modlunky2.utils import tb_info
 
 from .constants import (
@@ -77,7 +78,7 @@ def download_playlunky_release(call, tag, download_url, launch):
 
 
 class DownloadFrame(ttk.Frame):
-    def __init__(self, parent, task_manager):
+    def __init__(self, parent, task_manager: TaskManager):
         super().__init__(parent)
 
         self.parent = parent
@@ -161,7 +162,7 @@ def uninstall_playlunky_release(call, tag):
 
 
 class UninstallFrame(ttk.Frame):
-    def __init__(self, parent, task_manager):
+    def __init__(self, parent, task_manager: TaskManager):
         super().__init__(parent)
 
         self.parent = parent
@@ -240,7 +241,7 @@ def cache_playlunky_releases(call):
 class VersionFrame(ttk.LabelFrame):
     CACHE_RELEASES_INTERVAL = 1000 * 30 * 60
 
-    def __init__(self, parent, modlunky_config: Config, task_manager):
+    def __init__(self, parent, modlunky_config: Config, task_manager: TaskManager):
         logger.debug("Initializing Playlunky VersionFrame")
         super().__init__(parent, text="Version")
         self.parent = parent

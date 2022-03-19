@@ -7,6 +7,7 @@ from typing import List, Optional
 
 from modlunky2.config import Config
 from modlunky2.ui.play.config import SECTIONS, PlaylunkyConfig
+from modlunky2.ui.tasks import TaskManager
 from modlunky2.ui.widgets import (
     ScrollableFrameLegacy,
     Tab,
@@ -48,7 +49,12 @@ def launch_playlunky(
 
 class PlayTab(Tab):
     def __init__(
-        self, tab_control, modlunky_config: Config, task_manager, *args, **kwargs
+        self,
+        tab_control,
+        modlunky_config: Config,
+        task_manager: TaskManager,
+        *args,
+        **kwargs,
     ):
         super().__init__(tab_control, *args, **kwargs)
         self.tab_control = tab_control
