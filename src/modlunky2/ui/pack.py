@@ -110,6 +110,8 @@ class WarningFrame(ttk.Frame):
 
 
 class PackTab(Tab):
+    MISSING_INSTALL_DIR = "Packs shouldn't exist without install-dir"
+
     def __init__(
         self,
         tab_control,
@@ -174,6 +176,9 @@ class PackTab(Tab):
         webbrowser.open_new_tab("steam://validate/418530")
 
     def restore(self):
+        if self.modlunky_config.install_dir is None:
+            raise Exception(self.MISSING_INSTALL_DIR)
+
         mods_dir = self.modlunky_config.install_dir / MODS
         extract_dir = mods_dir / "Extracted"
         source_exe = extract_dir / "Spel2.exe"
@@ -190,6 +195,9 @@ class PackTab(Tab):
         logger.info("Done")
 
     def pack(self):
+        if self.modlunky_config.install_dir is None:
+            raise Exception(self.MISSING_INSTALL_DIR)
+
         packs = [
             self.modlunky_config.install_dir / "Mods" / exe.get()
             for exe in self.checkbox_vars
@@ -203,6 +211,9 @@ class PackTab(Tab):
         )
 
     def get_packs(self):
+        if self.modlunky_config.install_dir is None:
+            raise Exception(self.MISSING_INSTALL_DIR)
+
         pack_dirs = []
         packs_dir = self.modlunky_config.install_dir / "Mods" / "Packs"
         if packs_dir.exists():
