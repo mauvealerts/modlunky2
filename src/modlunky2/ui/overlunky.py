@@ -162,10 +162,11 @@ class OverlunkyTab(Tab):
             "Would you like to install and run the latest?"
         )
 
-        answer = tk.messagebox.askokcancel(
+        # tk.messagebox is missing from typeshed
+        answer = tk.messagebox.askokcancel(  # type: ignore
             title="Install?",
             message=msg,
-            icon=tk.messagebox.INFO,
+            icon=tk.messagebox.INFO,  # type: ignore
         )
 
         return answer
