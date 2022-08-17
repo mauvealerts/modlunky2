@@ -1819,6 +1819,24 @@ dependencies = [
 ]
 
 [[package]]
+name = "ml2_play"
+version = "0.1.0"
+dependencies = [
+ "anyhow",
+ "async-trait",
+ "clap",
+ "derivative",
+ "directories",
+ "ml2_net",
+ "serde",
+ "thiserror",
+ "tokio",
+ "tokio-graceful-shutdown",
+ "toml",
+ "tracing-subscriber",
+]
+
+[[package]]
 name = "modlunky2"
 version = "0.1.0"
 dependencies = [
