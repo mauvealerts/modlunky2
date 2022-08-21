@@ -2,13 +2,10 @@ use std::{ops::Deref, path::PathBuf};
 
 use anyhow::anyhow;
 use clap::{Parser, Subcommand};
-use ml2_net::http::new_http_client;
+use ml2_net::http::{DownloadProgress, HttpClient};
 use tokio::{fs, select, sync::watch};
 
-use ml2_mods::{
-    data::DownloadProgress,
-    spelunkyfyi::http::{HttpApiMods, RemoteMods},
-};
+use ml2_mods::spelunkyfyi::http::{HttpApiMods, RemoteMods};
 
 #[derive(Parser)]
 #[clap(author, version, about, long_about = None)]
@@ -33,7 +30,7 @@ async fn main() -> anyhow::Result<()> {
 
     let cli = Cli::parse();
 
-    let http_api_mods = HttpApiMods::new(&cli.service_root, &cli.token, new_http_client())?;
+    let http_api_mods = HttpApiMods::new(&cli.service_root, &cli.token, HttpClient::new())?;
 
     match cli.command {
         Commands::Info { code } => {

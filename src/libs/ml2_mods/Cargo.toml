@@ -14,8 +14,7 @@ chrono = {version = "0.4", features = ["serde"]}
 derivative = "2.2"
 futures-util = "0.3"
 http = "0.2"
-hyper = {version = "0.14", features = ["client", "http1", "http2", "tcp"]}
-hyper-tls = "0.5"
+hyper = "0.14"
 instant = "0.1"
 ml2_net = { path = "../ml2_net" }
 rand = "0.8"
@@ -26,7 +25,6 @@ thiserror = "1.0"
 tokio = {version = "1.21", features = ["fs", "macros", "rt", "rt-multi-thread", "signal", "sync", "time", "tracing"] }
 tokio-graceful-shutdown = "0.11"
 tokio-tungstenite = { version = "0.17", features = ["native-tls"] }
-tower = {version = "0.4", features = ["util"]}
 tracing = "0.1"
 zip = "0.6"
 

@@ -2,7 +2,6 @@ use std::{
     fmt::Debug,
     num::ParseIntError,
     path::{Path, PathBuf},
-    sync::Arc,
 };
 
 use anyhow::anyhow;
@@ -10,27 +9,16 @@ use async_trait::async_trait;
 use chrono::{DateTime, Utc};
 use derivative::Derivative;
 use http::{
-    header::{ToStrError, AUTHORIZATION, CONTENT_LENGTH, CONTENT_TYPE},
+    header::ToStrError,
     uri::{InvalidUri, InvalidUriParts},
-    HeaderValue, Request, Response, Uri,
+    Uri,
 };
-use hyper::{
-    body::{Buf, HttpBody},
-    Body,
-};
-use ml2_net::http::{HttpClient, TracedResponse};
+use hyper::body::Buf;
+use ml2_net::http::{DownloadProgress, HttpClient};
 use serde::{Deserialize, Serialize};
 use tempfile::{tempdir, TempDir};
-use tokio::{
-    fs,
-    io::{AsyncWrite, AsyncWriteExt as _},
-    join,
-    sync::{watch, Mutex},
-};
-use tower::{Service as _, ServiceExt as _};
+use tokio::{fs, join, sync::watch};
 use tracing::instrument;
-
-use crate::data::DownloadProgress;
 
 use super::{Error, Result};
 
@@ -111,12 +99,7 @@ pub struct HttpApiMods {
     #[derivative(Debug = "ignore")]
     auth_token: String,
     #[derivative(Debug = "ignore")]
-    http_client: Arc<Mutex<HttpClient>>,
-}
-
-enum Auth {
-    Yes(),
-    No(),
+    http_client: HttpClient,
 }
 
 impl HttpApiMods {
@@ -124,11 +107,11 @@ impl HttpApiMods {
         Ok(HttpApiMods {
             auth_token: auth_token.to_string(),
             base_uri: service_root.parse::<Uri>()?,
-            http_client: Arc::new(Mutex::new(http_client)),
+            http_client,
         })
     }
 
-    fn uri_from_path(&self, path: impl AsRef<Path> + Debug) -> Result<Uri> {
+    fn uri_from_path(&self, path: impl AsRef<Path> + Debug) -> Result<String> {
         let path = Path::new(self.base_uri.path()).join(path);
         let path = path
             .to_str()
@@ -137,74 +120,8 @@ impl HttpApiMods {
         let mut parts = self.base_uri.clone().into_parts();
         parts.path_and_query = Some(path.try_into()?);
 
-        let uri = Uri::from_parts(parts)?;
+        let uri = Uri::from_parts(parts)?.to_string();
         Ok(uri)
-    }
-
-    async fn get_uri(&self, uri: &Uri, auth: Auth) -> Result<Response<TracedResponse<Body>>> {
-        let request = Request::get(uri).version(http::Version::HTTP_11);
-        let request = match auth {
-            Auth::Yes() => {
-                let authz_value = HeaderValue::from_str(&format!("Token {}", self.auth_token))?;
-                request.header(AUTHORIZATION, authz_value)
-            }
-            Auth::No() => request,
-        };
-
-        let request = request
-            .body(Body::empty())
-            .map_err(|e| Error::UnknownError(e.into()))?;
-
-        let res = self
-            .http_client
-            .lock()
-            .await
-            .ready()
-            .await?
-            .call(request)
-            .await?;
-        if !res.status().is_success() {
-            return Err(Error::StatusError(res.status()));
-        }
-        Ok(res)
-    }
-
-    #[instrument(skip(writer))]
-    async fn download(
-        &self,
-        uri: &str,
-        writer: &mut (impl AsyncWrite + Debug + Send + Unpin),
-        progress: &watch::Sender<DownloadProgress>,
-    ) -> Result<String> {
-        let _ = progress.send(DownloadProgress::Started());
-        let uri = uri.parse::<Uri>()?;
-        let mut res = self.get_uri(&uri, Auth::No()).await?;
-        let content_type = res
-            .headers()
-            .get(CONTENT_TYPE)
-            .ok_or_else(|| Error::GenericHttpError(anyhow!("No content type for URI {}", uri)))?
-            .to_str()?
-            .to_string();
-        let expected_bytes = if let Some(val) = res.headers().get(CONTENT_LENGTH) {
-            Some(val.to_str()?.parse::<u64>()?)
-        } else {
-            None
-        };
-        tokio::pin!(writer);
-        let mut received_bytes = 0_u64;
-        while let Some(chunk) = res.body_mut().data().await {
-            let chunk = chunk?;
-            received_bytes += chunk.len() as u64;
-            let _ = progress.send(DownloadProgress::Receiving {
-                expected_bytes,
-                received_bytes,
-            });
-            writer.write_all(&chunk).await?;
-        }
-        writer.flush().await?;
-
-        let _ = progress.send(DownloadProgress::Finished());
-        Ok(content_type)
     }
 
     #[instrument(skip_all)]
@@ -216,7 +133,8 @@ impl HttpApiMods {
     ) -> Result<PathBuf> {
         let file_path = dir.path().join(&mod_file.filename);
         let mut file = fs::File::create(&file_path).await?;
-        self.download(&mod_file.download_url, &mut file, progress)
+        self.http_client
+            .download(&mod_file.download_url, &mut file, progress)
             .await?;
         Ok(file_path)
     }
@@ -241,7 +159,10 @@ impl HttpApiMods {
 
         let file_path = dir.path().join(&file_name);
         let mut file = fs::File::create(&file_path).await?;
-        let content_type = self.download(logo_url, &mut file, progress).await?;
+        let content_type = self
+            .http_client
+            .download(logo_url, &mut file, progress)
+            .await?;
         let logo = DownloadedLogo {
             file: file_path,
             content_type,
@@ -255,7 +176,11 @@ impl RemoteMods for HttpApiMods {
     #[instrument]
     async fn get_manifest(&self, id: &str) -> Result<Mod> {
         let uri = self.uri_from_path(Path::new("/api/mods/").join(id))?;
-        let res = self.get_uri(&uri, Auth::Yes()).await?;
+        let res = self
+            .http_client
+            .clone()
+            .get(&uri, Some(&self.auth_token))
+            .await?;
         let body = hyper::body::aggregate(res).await?;
         let m = serde_json::from_reader(body.reader())?;
         Ok(m)
@@ -324,6 +249,12 @@ impl From<http::Error> for Error {
 
 impl From<hyper::Error> for Error {
     fn from(e: hyper::Error) -> Error {
+        Error::GenericHttpError(e.into())
+    }
+}
+
+impl From<ml2_net::http::Error> for Error {
+    fn from(e: ml2_net::http::Error) -> Error {
         Error::GenericHttpError(e.into())
     }
 }

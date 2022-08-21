@@ -20,7 +20,7 @@ use ml2_mods::{
         },
     },
 };
-use ml2_net::http::new_http_client;
+use ml2_net::http::HttpClient;
 
 #[derive(Parser)]
 #[clap(author, version, about, long_about = None)]
@@ -73,7 +73,7 @@ async fn main() -> anyhow::Result<()> {
     let api_client = cli
         .token
         .as_ref()
-        .map(|token| HttpApiMods::new(&cli.service_root, token, new_http_client()))
+        .map(|token| HttpApiMods::new(&cli.service_root, token, HttpClient::new()))
         .transpose()?;
 
     let (detected_tx, detected_rx) = broadcast::channel(10);

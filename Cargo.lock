@@ -1225,25 +1225,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "h2"
-version = "0.3.14"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "5ca32592cf21ac7ccab1825cd87f6c9b3d9022c44d086172ed0966bec8af30be"
-dependencies = [
- "bytes",
- "fnv",
- "futures-core",
- "futures-sink",
- "futures-util",
- "http",
- "indexmap",
- "slab",
- "tokio",
- "tokio-util",
- "tracing",
-]
-
-[[package]]
 name = "hashbrown"
 version = "0.12.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1352,7 +1333,6 @@ dependencies = [
  "futures-channel",
  "futures-core",
  "futures-util",
- "h2",
  "http",
  "http-body",
  "httparse",
@@ -1804,7 +1784,6 @@ dependencies = [
  "futures-util",
  "http",
  "hyper",
- "hyper-tls",
  "instant",
  "ml2_net",
  "rand 0.8.5",
@@ -1815,7 +1794,6 @@ dependencies = [
  "tokio",
  "tokio-graceful-shutdown",
  "tokio-tungstenite",
- "tower",
  "tracing",
  "tracing-subscriber",
  "zip",
@@ -1827,14 +1805,17 @@ version = "0.1.0"
 dependencies = [
  "anyhow",
  "backoff",
+ "derivative",
  "http",
  "hyper",
  "hyper-tls",
  "instant",
+ "serde",
  "thiserror",
  "tokio",
  "tower",
  "tower-http",
+ "tracing",
 ]
 
 [[package]]
@@ -3584,7 +3565,6 @@ dependencies = [
  "futures-sink",
  "pin-project-lite",
  "tokio",
- "tracing",
 ]
 
 [[package]]

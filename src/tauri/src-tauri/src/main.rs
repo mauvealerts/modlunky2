@@ -10,7 +10,7 @@ use std::time::Duration;
 use anyhow::anyhow;
 use directories::{BaseDirs, ProjectDirs};
 use ml2_mods::spelunkyfyi::http::DEFAULT_SERVICE_ROOT;
-use ml2_net::http::new_http_client;
+use ml2_net::http::HttpClient;
 use serde::{Deserialize, Serialize};
 use tauri::{AppHandle, Runtime};
 use tokio::select;
@@ -78,7 +78,7 @@ async fn main() -> anyhow::Result<()> {
             })
     };
 
-    let http_client = new_http_client();
+    let http_client = HttpClient::new();
     let toplevel = if config.install_dir.is_some() {
         setup_mod_management(toplevel, tauri_app.handle(), http_client, &config)?
     } else {

@@ -1,9 +1,8 @@
 use anyhow::anyhow;
 use async_trait::async_trait;
+use ml2_net::http::DownloadProgress;
 use tokio::sync::watch;
 use tracing::{info, instrument};
-
-use crate::data::DownloadProgress;
 
 use super::{
     http::{DownloadedMod, Mod, RemoteMods},

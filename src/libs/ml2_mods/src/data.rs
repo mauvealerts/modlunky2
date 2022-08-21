@@ -1,3 +1,4 @@
+use ml2_net::http::DownloadProgress;
 use serde::{Deserialize, Serialize};
 
 use crate::manager::Error;
@@ -22,17 +23,6 @@ pub struct Manifest {
     pub description: String,
     pub logo: Option<String>,
     pub mod_file: ManifestModFile,
-}
-
-#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
-pub enum DownloadProgress {
-    Waiting(),
-    Started(),
-    Receiving {
-        expected_bytes: Option<u64>,
-        received_bytes: u64,
-    },
-    Finished(),
 }
 
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]

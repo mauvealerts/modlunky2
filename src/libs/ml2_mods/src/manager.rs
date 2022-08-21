@@ -3,13 +3,14 @@ use std::time::Duration;
 use anyhow::anyhow;
 use async_trait::async_trait;
 use derivative::Derivative;
+use ml2_net::http::DownloadProgress;
 use tokio::select;
 use tokio::sync::{broadcast, mpsc, oneshot, watch};
 use tokio::time::MissedTickBehavior;
 use tokio_graceful_shutdown::{IntoSubsystem, SubsystemHandle};
 use tracing::{debug, info, instrument};
 
-use crate::data::{Change, DownloadProgress, Mod, ModProgress};
+use crate::data::{Change, Mod, ModProgress};
 use crate::local::cache::DetectedChange;
 use crate::local::{Error as LocalError, LocalMods, ModLogo};
 use crate::spelunkyfyi::{
