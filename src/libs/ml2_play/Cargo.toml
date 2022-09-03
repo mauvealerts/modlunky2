@@ -12,7 +12,7 @@ derivative = "2.2"
 ml2_net = { path = "../ml2_net" }
 serde = {version = "1.0", features = ["derive"] }
 thiserror = "1.0"
-tokio = {version = "1.21", features = ["fs", "sync"] }
+tokio = {version = "1.21", features = ["fs", "process", "sync"] }
 tokio-graceful-shutdown = "0.11"
 toml = "0.5"
 

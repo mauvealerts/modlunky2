@@ -63,7 +63,7 @@ impl Manager {
     ) -> (Self, Handle) {
         let (commands_tx, commands_rx) = mpsc::channel(1);
         let manager = Self {
-            binary: Binary::new(ml2_path),
+            binary: Binary::new(install_dir, ml2_path),
             commands_rx,
             events_tx,
             load_order: LoadOrder::new(install_dir),
@@ -75,7 +75,10 @@ impl Manager {
 
     async fn handle_command(&self, cmd: Command) {
         match cmd {
-            Command::Launch { version, resp } => todo!(),
+            Command::Launch { version, resp } => {
+                let tx = self.events_tx.clone();
+                let _ = resp.send(self.binary.launch(version, tx).await);
+            }
             Command::ReadLoadOrder { resp } => {
                 let _ = resp.send(self.load_order.read().await);
             }
