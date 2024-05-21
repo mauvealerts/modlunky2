@@ -8,7 +8,7 @@ packaging==23.2
 platformdirs==3.11.0
 pyperclip==1.8.2
 pyserde==0.12.2
-requests==2.31.0
+requests==2.32.0
 sfyi-fsb5==1.1
 starlette==0.31.1
 typing_extensions==4.8.0
